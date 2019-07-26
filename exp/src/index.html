@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="/socket.io/socket.io.js"></script>
+    </head>
+    <body>
+        <button id="make-client-move">
+            Make client move
+        </button>
+        <script>
+        const socket = io.connect('http://localhost:9700');
+        const button = document.getElementById('make-client-move');
+
+        let currentBoard = null;
+
+         socket.on('action', ({ type, payload: { board, winner } }) => {
+             if (type ==='gameStart') {
+                currentBoard = board;
+                 window.console.log('new board ->', currentBoard);
+                 button.disabled = false;
+             }
+
+             if (type === 'serverMove') {
+                 window.console.log('new board ->', board);
+                 button.disabled = false;
+                 currentBoard = board;
+             }
+
+             if (type === 'gameEnd') {
+                 window.console.dir(winner);
+                 currentBoard = null;
+                 button.disabled = true;
+             }
+        });
+
+         const updateBoard = b => {
+            const indexToUpdate = b.indexOf('-');
+
+            if (indexToUpdate === -1) {
+                return null;
+            }
+
+            return b
+                .slice(0, indexToUpdate)
+                .concat(
+                    'X',
+                    b.slice(indexToUpdate + 1),
+                );
+        };
+
+        button
+            .addEventListener(
+                'click',
+                () => {
+                    currentBoard = updateBoard(currentBoard);
+                    window.console.dir(currentBoard);
+                    button.disabled = true;
+                    socket.emit('action', {
+                        type: 'clientMove',
+                        payload: {
+                            board: currentBoard,
+                        },
+                    });
+                },
+            );
+        </script>
+    </body>
+</html>

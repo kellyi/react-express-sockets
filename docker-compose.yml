@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  exp:
+    build: ./exp
+    working_dir: /usr/src/api
+    volumes:
+      - ./exp:/usr/src/api
+      - /usr/src/api/node_modules
+    ports:
+      - 9700:9700
+    tty: true
+    command: npm start
+
+  app:
+    build: ./app
+    working_dir: /usr/src/app
+    volumes:
+      - ./app:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - 3000:3000
+    tty: true
+    environment:
+      - BROWSER=none
+    command: npm start
