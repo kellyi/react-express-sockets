@@ -24,3 +24,8 @@ services:
     environment:
       - BROWSER=none
     command: npm start
+
+  redis:
+    image: redis
+    expose:
+      - 6379

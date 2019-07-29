@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const socketio = require('socket.io');
+const redisAdapter = require('socket.io-redis');
 const expressSession = require('express-session');
 const sharedSession = require('express-socket.io-session');
 
@@ -38,6 +39,7 @@ const server = http.Server(app);
 
 const io = socketio(server);
 
+io.adapter(redisAdapter({ host: 'redis', port: 6379 }));
 io.use(sharedSession(session));
 
 let users = {};
