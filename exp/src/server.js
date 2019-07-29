@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
+const healthcheck = require('healthcheck-middleware');
 const socketio = require('socket.io');
 const redisAdapter = require('socket.io-redis');
 const expressSession = require('express-session');
@@ -31,9 +32,9 @@ app.use(compression());
 app.use(bodyParser.json());
 app.use(morgan('combined'));
 app.use(session);
+app.use('/healthcheck', healthcheck());
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '/index.html')));
-app.get('/health-check', (req, res) => res.sendStatus(204));
 
 const server = http.Server(app);
 
