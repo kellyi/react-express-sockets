@@ -8,7 +8,6 @@
     "dev-server": "node_modules/.bin/nodemon ./src/server.js",
     "watch:lint": "node node_modules/eslint-watch/bin/esw -w",
     "start": "node_modules/.bin/concurrently --kill-others --raw \"npm run watch:lint\" \"npm run dev-server\"",
-    "prod-server": "node src/server.js",
     "test": "jest"
   },
   "author": "",
