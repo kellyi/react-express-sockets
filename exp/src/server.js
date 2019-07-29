@@ -7,96 +7,89 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const socketio = require('socket.io');
-const AI = require('tictactoe-agent');
+const expressSession = require('express-session');
+const sharedSession = require('express-socket.io-session');
 
 const constants = require('./constants');
 const utils = require('./utils');
 
-const {
-    socketEventTypesEnum: { serverMove, clientMove, gameStart, gameEnd },
-    action,
-    emptyBoard,
-    O,
-    X,
-} = constants;
+const { action, socketEventTypesEnum } = constants;
 
-const { checkForXWin, checkForOWin } = utils;
+const { maybeGetUserName, setUserName, removeUserName } = utils;
 
 const app = express();
-const PORT = 9700;
+const session = expressSession({
+    secret: 'secret',
+    resave: true,
+    saveUninitialized: true,
+});
 
 app.use(cors());
 app.use(helmet());
 app.use(compression());
 app.use(bodyParser.json());
 app.use(morgan('combined'));
+app.use(session);
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '/index.html')));
+app.get('/health-check', (req, res) => res.sendStatus(204));
 
 const server = http.Server(app);
 
 const io = socketio(server);
 
+io.use(sharedSession(session));
+
+let users = {};
+
 io.on('connection', socket => {
-    socket.emit(action, {
-        type: gameStart,
-        payload: {
-            board: emptyBoard,
-            winner: null,
-        },
+    const {
+        handshake: { sessionID },
+    } = socket;
+
+    socket.broadcast.emit(action, {
+        type: socketEventTypesEnum.newConnection,
+        payload: `${maybeGetUserName(sessionID, users)} joined the chat`,
     });
 
-    socket.on(action, ({ type, payload: { board } }) =>
-        setTimeout(() => {
-            if (type !== clientMove) {
-                console.warn(type);
-                return null;
-            }
-
-            if (checkForXWin(board)) {
-                return socket.emit(action, {
-                    type: gameEnd,
-                    payload: {
-                        board,
-                        winner: X,
-                    },
-                });
-            }
-
-            const model = new AI.Model(board, O);
-            const { index } = model.getRecommendation();
-
-            if (index === undefined) {
-                return socket.emit(action, {
-                    type: gameEnd,
-                    payload: {
-                        board,
-                    },
-                });
-            }
-
-            const updatedBoard = board
-                .slice(0, index)
-                .concat(O, board.slice(index + 1));
-
-            if (checkForOWin(updatedBoard)) {
-                return socket.emit(action, {
-                    type: gameEnd,
-                    payload: {
-                        board: updatedBoard,
-                        winner: O,
-                    },
-                });
-            }
-
-            return socket.emit(action, {
-                type: serverMove,
+    socket.on(action, ({ type, payload }) => {
+        if (type === socketEventTypesEnum.sendMessage) {
+            socket.broadcast.emit(action, {
+                type: socketEventTypesEnum.broadcastMessage,
                 payload: {
-                    board: updatedBoard,
-                    winner: null,
+                    timestamp: Date.now(),
+                    user: maybeGetUserName(sessionID, users),
+                    message: payload,
                 },
             });
-        }, Math.random() * 3000));
+        }
+
+        if (type === socketEventTypesEnum.setName) {
+            users = setUserName(sessionID, payload, users);
+
+            socket.broadcast.emit(action, {
+                type: socketEventTypesEnum.broadcastName,
+                payload,
+            });
+        }
+
+        if (type === socketEventTypesEnum.isTyping) {
+            const isTypingMessage = `${maybeGetUserName(
+                sessionID,
+                users,
+            )} is typing`;
+
+            socket.broadcast.emit(action, {
+                type: socketEventTypesEnum.broadcastIsTyping,
+                payload: isTypingMessage,
+            });
+        }
+    });
+
+    socket.on(socketEventTypesEnum.disconnect, () => {
+        users = removeUserName(sessionID, users);
+    });
 });
 
+const PORT = 9700;
 server.listen(PORT);

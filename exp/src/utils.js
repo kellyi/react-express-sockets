@@ -1,32 +1,20 @@
-const R = require('ramda');
+const _ = require('lodash');
 
-const constants = require('./constants');
+const initialUsers = Object.freeze({});
 
-const makeCheckForWinnerFunction = player => board => {
-    const leftTest = new RegExp(`^${player}..${player}..${player}..$`);
-    const centerTest = new RegExp(`^.${player}..${player}..${player}.$`);
-    const rightTest = new RegExp(`^..${player}..${player}..${player}$`);
-    const topTest = new RegExp(`^${player}${player}${player}......$`);
-    const middleTest = new RegExp(`^...${player}${player}${player}...$`);
-    const bottomTest = new RegExp(`^......${player}${player}${player}$`);
-    const descTest = new RegExp(`^${player}...${player}...${player}$`);
-    const ascTest = new RegExp(`^..${player}.${player}.${player}..$`);
+const maybeGetUserName = (sessionID, users = initialUsers) =>
+    _.get(users, sessionID, 'anonymous');
 
-    return R.any(match => R.test(match, board), [
-        leftTest,
-        centerTest,
-        rightTest,
-        topTest,
-        middleTest,
-        bottomTest,
-        descTest,
-        ascTest,
-    ])
-        ? player
-        : null;
-};
+const setUserName = (sessionID, username, users = initialUsers) => ({
+    ...users,
+    [sessionID]: username,
+});
+
+const removeUserName = (sessionID, users = initialUsers) =>
+    _.omit(users, [sessionID]);
 
 module.exports = {
-    checkForXWin: makeCheckForWinnerFunction(constants.X),
-    checkForOWin: makeCheckForWinnerFunction(constants.O),
+    maybeGetUserName,
+    setUserName,
+    removeUserName,
 };

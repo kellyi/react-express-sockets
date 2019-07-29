@@ -4,65 +4,100 @@
         <script src="/socket.io/socket.io.js"></script>
     </head>
     <body>
-        <button id="make-client-move">
-            Make client move
-        </button>
+        <div style="display:flex;flex-direction:column">
+            <div>
+                <label>
+                    <em>
+                        Name:
+                    </em>
+                    <input
+                        type="text"
+                        id="name-input"
+                    />
+                </label>
+                <button
+                    id="submit-name"
+                >
+                    Submit name
+                </button>
+            </div>
+            <div>
+                <label>
+                    <em>
+                        Message:
+                    </em>
+                    <input
+                        type="text"
+                        id="message-input"
+                    />
+                </label>
+                <button
+                    id="submit-message"
+                >
+                    Submit message
+                </button>
+            </div>
+        </div>
+        <div>
+            <p>
+                <strong>
+                    Messages
+                </strong>
+            </p>
+            <ul id="messages-ul">
+            </ul>
+        </div>
         <script>
-        const socket = io.connect('http://localhost:9700');
-        const button = document.getElementById('make-client-move');
+         const socket = io.connect('http://localhost:9700');
+         const action = 'action';
+         const nameInput = document.getElementById('name-input');
+         const submitNameButton = document.getElementById('submit-name');
+         const messageInput = document.getElementById('message-input');
+         const submitMessageButton = document.getElementById('submit-message');
+         const messagesUL = document.getElementById('messages-ul');
 
-        let currentBoard = null;
+         const appendMessage = message => {
+             const li = document.createElement('li');
+             const textNode = document.createTextNode(message);
+             li.appendChild(textNode);
+             messagesUL.appendChild(li);
+         };
 
-         socket.on('action', ({ type, payload: { board, winner } }) => {
-             if (type ==='gameStart') {
-                currentBoard = board;
-                 window.console.log('new board ->', currentBoard);
-                 button.disabled = false;
+         submitNameButton
+             .addEventListener('click', () => {
+                 socket.emit(action, {
+                     type: 'setName',
+                     payload: nameInput.value,
+                 });
+             });
+
+         submitMessageButton
+             .addEventListener('click', () => {
+                 socket.emit(action, {
+                     type: 'sendMessage',
+                     payload: messageInput.value,
+                 });
+
+                 appendMessage(messageInput.value);
+                 messageInput.value = '';
+             });
+
+         messageInput
+             .addEventListener('keydown', () => {
+                 socket.emit(action, {
+                     type: 'isTyping',
+                 });
+             });
+
+         socket.on('action', ({ type, payload }) => {
+             if (type === 'broadcastMessage') {
+                 appendMessage(payload.message);
              }
 
-             if (type === 'serverMove') {
-                 window.console.log('new board ->', board);
-                 button.disabled = false;
-                 currentBoard = board;
+             if (type === 'broadcastIsTyping') {
+                 window.console.dir(payload);
              }
-
-             if (type === 'gameEnd') {
-                 window.console.dir(winner);
-                 currentBoard = null;
-                 button.disabled = true;
-             }
-        });
-
-         const updateBoard = b => {
-            const indexToUpdate = b.indexOf('-');
-
-            if (indexToUpdate === -1) {
-                return null;
-            }
-
-            return b
-                .slice(0, indexToUpdate)
-                .concat(
-                    'X',
-                    b.slice(indexToUpdate + 1),
-                );
-        };
-
-        button
-            .addEventListener(
-                'click',
-                () => {
-                    currentBoard = updateBoard(currentBoard);
-                    window.console.dir(currentBoard);
-                    button.disabled = true;
-                    socket.emit('action', {
-                        type: 'clientMove',
-                        payload: {
-                            board: currentBoard,
-                        },
-                    });
-                },
-            );
+         });
         </script>
     </body>
 </html>

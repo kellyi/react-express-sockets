@@ -1,28 +1,17 @@
-const X = 'X';
-const O = 'O';
-
-const spaceStatusEnum = Object.freeze({
-    X,
-    O,
-    Empty: '-',
-});
-
 const socketEventTypesEnum = Object.freeze({
-    serverMove: 'serverMove',
-    clientMove: 'clientMove',
-    gameStart: 'gameStart',
-    gameEnd: 'gameEnd',
+    sendMessage: 'sendMessage',
+    broadcastMessage: 'broadcastMessage',
+    setName: 'setName',
+    broadcastName: 'broadcastName',
+    isTyping: 'isTyping',
+    broadcastIsTyping: 'broadcastIsTyping',
+    newConnection: 'newConnection',
+    disconnect: 'disconnect',
 });
-
-const emptyBoard = '---------';
 
 const action = 'action';
 
 module.exports = {
-    X,
-    O,
-    spaceStatusEnum,
     socketEventTypesEnum,
     action,
-    emptyBoard,
 };

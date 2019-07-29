@@ -1,36 +1,35 @@
+const _ = require('lodash');
 const utils = require('./utils');
-const constants = require('./constants');
 
-const { X, O } = constants;
+const { maybeGetUserName, setUserName, removeUserName } = utils;
 
-const { checkForXWin, checkForOWin } = utils;
+it('sets, gets, and removes usernames', () => {
+    const sessionOne = 'sessionOne';
+    const nameOne = 'nameOne';
+    const sessionTwo = 'sessionTwo';
+    const nameTwo = 'nameTwo';
+    const anonymousSession = 'anonymousSession';
 
-it('checks whether X or O have won', () => {
-    const leftWinBoard = 'X--X--X--';
-    const centerWinBoard = '-X--X--X-';
-    const rightWinBoard = '--X--X--X';
-    const noWinBoardVert = '-O--X--X-';
+    let users = {};
+    users = setUserName(sessionOne, nameOne, users);
+    users = setUserName(sessionTwo, nameTwo, users);
 
-    const topWinBoard = 'OOO------';
-    const midWinBoard = '---OOO---';
-    const bottomWinBoard = '------OOO';
-    const noWinBoardHoriz = '---OXO---';
+    expect(
+        _.isEqual(users, {
+            sessionOne: nameOne,
+            sessionTwo: nameTwo,
+        }),
+    ).toBe(true);
 
-    const ascWinBoard = '--X-X-X--';
-    const descWinBoard = 'O---O---O';
-    const noWinBoardDiag = 'X---O---O';
+    expect(maybeGetUserName(sessionOne, users)).toBe(nameOne);
 
-    expect(checkForXWin(leftWinBoard)).toBe(X);
-    expect(checkForXWin(centerWinBoard)).toBe(X);
-    expect(checkForXWin(rightWinBoard)).toBe(X);
-    expect(checkForXWin(noWinBoardVert)).toBeNull();
+    expect(maybeGetUserName(anonymousSession, users)).toBe('anonymous');
 
-    expect(checkForOWin(topWinBoard)).toBe(O);
-    expect(checkForOWin(midWinBoard)).toBe(O);
-    expect(checkForOWin(bottomWinBoard)).toBe(O);
-    expect(checkForOWin(noWinBoardHoriz)).toBeNull();
+    users = removeUserName(sessionTwo, users);
 
-    expect(checkForXWin(ascWinBoard)).toBe(X);
-    expect(checkForOWin(descWinBoard)).toBe(O);
-    expect(checkForXWin(noWinBoardDiag)).toBeNull();
+    expect(
+        _.isEqual(users, {
+            sessionOne: nameOne,
+        }),
+    ).toBe(true);
 });
