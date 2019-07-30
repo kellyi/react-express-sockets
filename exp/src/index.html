@@ -66,7 +66,7 @@
          submitNameButton
              .addEventListener('click', () => {
                  socket.emit(action, {
-                     type: 'setName',
+                     type: 'clientSetName',
                      payload: nameInput.value,
                  });
              });
@@ -74,18 +74,17 @@
          submitMessageButton
              .addEventListener('click', () => {
                  socket.emit(action, {
-                     type: 'sendMessage',
+                     type: 'clientSendMessage',
                      payload: messageInput.value,
                  });
 
-                 appendMessage(messageInput.value);
                  messageInput.value = '';
              });
 
          messageInput
              .addEventListener('keydown', () => {
                  socket.emit(action, {
-                     type: 'isTyping',
+                     type: 'clientIsTyping',
                  });
              });
 

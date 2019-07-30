@@ -1,13 +1,14 @@
-import { clientMove } from './actions.socketio';
+import { clientSendMessage, updateMessageInput } from './actions.socketio';
 
-const gameStart = 'gameStart';
-const serverMove = 'serverMove';
-const gameEnd = 'gameEnd';
+const broadcastMessage = 'broadcastMessage';
+// const braodcastName = 'broadcastName';
+// const broadcastIsTyping = 'broadcastIsTyping';
 
 const initialState = Object.freeze({
-    board: null,
-    winner: null,
-    isClientTurn: true,
+    name: '',
+    isTyping: false,
+    currentMessage: '',
+    messages: [],
 });
 
 export default function socketIOReducers(
@@ -15,24 +16,20 @@ export default function socketIOReducers(
     { type, payload },
 ) {
     switch (type) {
-        case clientMove:
+        case broadcastMessage:
             return {
                 ...state,
-                ...payload,
-                isClientTurn: false,
+                messages: [payload, ...state.messages],
             };
-        case gameEnd:
+        case clientSendMessage:
             return {
                 ...state,
-                ...payload,
-                isClientTurn: false,
+                currentMessage: initialState.currentMessage,
             };
-        case gameStart:
-        case serverMove:
+        case updateMessageInput:
             return {
                 ...state,
-                ...payload,
-                isClientTurn: true,
+                currentMessage: payload,
             };
         default:
             return state;

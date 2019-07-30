@@ -1,25 +1,44 @@
-export const clientMove = 'clientMove';
+export const clientSendMessage = 'clientSendMessage';
+export const clientSetName = 'clientSetName';
+export const clientIsTyping = 'clientIsTyping';
 
-export function makeClientMove(indexToUpdate) {
+export const updateMessageInput = 'updateMessageInput';
+
+export function updateMessage(payload) {
+    return {
+        type: updateMessageInput,
+        payload,
+    };
+}
+
+export function sendMessage() {
     return (dispatch, getState) => {
         const {
-            socketIO: {
-                board,
-            },
+            socketIO: { currentMessage },
         } = getState();
 
-        const updatedBoard = board
-              .slice(0, indexToUpdate)
-              .concat(
-                  'X',
-                  board.slice(indexToUpdate + 1),
-              );
+        return dispatch({
+            type: clientSendMessage,
+            payload: currentMessage,
+        });
+    };
+}
+
+export function isTyping() {
+    return {
+        type: clientIsTyping,
+    };
+}
+
+export function setName() {
+    return (dispatch, getState) => {
+        const {
+            socketIO: { name },
+        } = getState();
 
         return dispatch({
-            type: clientMove,
-            payload: {
-                board: updatedBoard,
-            },
+            type: clientSetName,
+            payload: name,
         });
     };
 }

@@ -56,27 +56,29 @@ io.on('connection', socket => {
     });
 
     socket.on(action, ({ type, payload }) => {
-        if (type === socketEventTypesEnum.sendMessage) {
-            socket.broadcast.emit(action, {
+        if (type === socketEventTypesEnum.clientSendMessage) {
+            const response = {
                 type: socketEventTypesEnum.broadcastMessage,
                 payload: {
                     timestamp: Date.now(),
                     user: maybeGetUserName(sessionID, users),
                     message: payload,
                 },
-            });
+            };
+            socket.broadcast.emit(action, response);
+            socket.emit(action, response);
         }
 
-        if (type === socketEventTypesEnum.setName) {
+        if (type === socketEventTypesEnum.clientSetName) {
             users = setUserName(sessionID, payload, users);
 
-            socket.broadcast.emit(action, {
+            socket.emit(action, {
                 type: socketEventTypesEnum.broadcastName,
                 payload,
             });
         }
 
-        if (type === socketEventTypesEnum.isTyping) {
+        if (type === socketEventTypesEnum.clientIsTyping) {
             const isTypingMessage = `${maybeGetUserName(
                 sessionID,
                 users,

@@ -1,9 +1,9 @@
 const socketEventTypesEnum = Object.freeze({
-    sendMessage: 'sendMessage',
+    clientSendMessage: 'clientSendMessage',
     broadcastMessage: 'broadcastMessage',
-    setName: 'setName',
+    clientSetName: 'clientSetName',
     broadcastName: 'broadcastName',
-    isTyping: 'isTyping',
+    clientIsTyping: 'clientIsTyping',
     broadcastIsTyping: 'broadcastIsTyping',
     newConnection: 'newConnection',
     disconnect: 'disconnect',
