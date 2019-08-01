@@ -3,6 +3,7 @@ export const clientSetName = 'clientSetName';
 export const clientIsTyping = 'clientIsTyping';
 
 export const updateMessageInput = 'updateMessageInput';
+export const updateNameInput = 'updateNameInput';
 
 export function updateMessage(payload) {
     return {
@@ -27,6 +28,13 @@ export function sendMessage() {
 export function isTyping() {
     return {
         type: clientIsTyping,
+    };
+}
+
+export function updateName(payload) {
+    return {
+        type: updateNameInput,
+        payload,
     };
 }
 

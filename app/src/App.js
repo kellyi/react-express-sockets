@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { hot } from 'react-hot-loader/root';
 import { Provider } from 'react-redux';
 
@@ -6,6 +7,7 @@ import store from './store';
 
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
+import NameInput from './NameInput';
 
 const appStyles = Object.freeze({
     containerStyles: Object.freeze({
@@ -21,12 +23,28 @@ const appStyles = Object.freeze({
     }),
 });
 
+function Content({ nameIsSet }) {
+    if (!nameIsSet) {
+        return <NameInput />;
+    }
+
+    return (
+        <>
+            <MessageList />
+            <MessageInput />
+        </>
+    );
+}
+
+const ContentComponent = connect(({ socketIO: { nameIsSet } }) => ({
+    nameIsSet,
+}))(Content);
+
 function App() {
     return (
         <Provider store={store}>
             <div style={appStyles.containerStyles}>
-                <MessageList />
-                <MessageInput />
+                <ContentComponent />
             </div>
         </Provider>
     );
